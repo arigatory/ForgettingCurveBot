@@ -84,9 +84,9 @@ namespace ForgettingCurveBot
             }
         }
 
-        private static Task ShowStatistics(TelegramUser user)
+        private static async Task ShowStatistics(TelegramUser user)
         {
-            throw new NotImplementedException();
+            await bot.SendTextMessageAsync(user.Id, $"Всего карточек: {user.Cards.Count}", replyMarkup: keyboardMarkup);
         }
 
         private static async Task StopCommandAsync(long id)
