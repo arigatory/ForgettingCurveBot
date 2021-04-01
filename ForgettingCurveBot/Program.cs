@@ -38,12 +38,53 @@ namespace ForgettingCurveBot
 
         private static async void Bot_OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
         {
-            var user = new TelegramUser { Id = e.CallbackQuery.Message.Chat.Id, Nickname = e.CallbackQuery.Message.Chat.FirstName };
-            user = users[users.IndexOf(user)];
-            var cardToRemove = user.Cards.FirstOrDefault(c => c.Title == e.CallbackQuery.Data);
-            user.Cards.Remove(cardToRemove);
-            await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, "Карта удалена");
-            await bot.DeleteMessageAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.Message.MessageId);
+            long userId = e.CallbackQuery.Message.Chat.Id;
+            var user = users.FirstOrDefault(u => u.Id == userId);
+            
+            // Id of the tapped card
+            int cardId = int.Parse(e.CallbackQuery.Data.Split(':')[1]);
+
+            // What user wants to do with the card
+            // All cards have data like "d:23849893" where 23849893 is card's Id;
+            string shortCommandForCard = e.CallbackQuery.Data.Split(':')[0];
+            switch (shortCommandForCard)
+            {
+                case "d":
+                    var cardToRemove = user.Cards.FirstOrDefault(c => c.Id == cardId);
+                    if (cardToRemove != null)
+                    {
+                        string cardTitle = cardToRemove.Title;
+                        user.Cards.Remove(cardToRemove);
+                        await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Карта '{cardTitle}' удалена");
+                        await bot.DeleteMessageAsync(userId, e.CallbackQuery.Message.MessageId);
+                    }
+                    else
+                    {
+                        await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Такой карты уже, похоже, нет");
+                        await bot.DeleteMessageAsync(userId, e.CallbackQuery.Message.MessageId);
+                    }
+                    break;
+                case "v":
+                    var cardToShow = user.Cards.FirstOrDefault(c => c.Id == cardId);
+                    if (cardToShow == null)
+                    {
+                        await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Такой карты уже, похоже, нет");
+                        await bot.DeleteMessageAsync(userId, e.CallbackQuery.Message.MessageId);
+                        return;
+                    }
+                    InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] {
+                        new InlineKeyboardButton { CallbackData = $"d:{cardToShow.Id}", Text = "Удалить" },
+                        new InlineKeyboardButton { CallbackData = $"r:{cardToShow.Id}", Text = "Сбросить" },
+                        new InlineKeyboardButton { CallbackData = $"l:{cardToShow.Id}", Text = "Изучена" }
+                    };
+                    InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
+                    await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id);
+                    await bot.SendTextMessageAsync(user.Id,
+                        $"*{cardToShow.Title}*\n--------\n{cardToShow.Data}", replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
+                    break;
+                default:
+                    break;
+            }
         }
 
         private static async void Bot_OnMessageReceived(object sender, Telegram.Bot.Args.MessageEventArgs e)
@@ -102,9 +143,9 @@ namespace ForgettingCurveBot
             {
                 foreach (var card in user.Cards)
                 {
-                    InlineKeyboardButton inlineKeyboardButtonDelete = new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Удалить" };
-                    InlineKeyboardButton inlineKeyboardButtonView = new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Посмотреть" };
-                    InlineKeyboardButton inlineKeyboardButtonDone = new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Изучена" };
+                    InlineKeyboardButton inlineKeyboardButtonDelete = new InlineKeyboardButton { CallbackData = $"d:{card.Id}", Text = "Удалить" };
+                    InlineKeyboardButton inlineKeyboardButtonView = new InlineKeyboardButton { CallbackData = $"v:{card.Id}", Text = "Посмотреть" };
+                    InlineKeyboardButton inlineKeyboardButtonDone = new InlineKeyboardButton { CallbackData = $"l:{card.Id}", Text = "Изучена" };
                     InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] { inlineKeyboardButtonDelete, inlineKeyboardButtonView, inlineKeyboardButtonDone };
                     InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
                     await bot.SendTextMessageAsync(user.Id, card.Data, replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
@@ -117,6 +158,30 @@ namespace ForgettingCurveBot
 
         }
 
+        private static async Task ShowOneCard(TelegramUser user, int cardId)
+        {
+            RemoveUnfilledCards(user);
+            if (user.Cards.Count > 0)
+            {
+                foreach (var card in user.Cards)
+                {
+                    InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] {
+                        new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Удалить" },
+                        new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Посмотреть" },
+                        new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Изучена" }
+                    };
+                    InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
+                    await bot.SendTextMessageAsync(user.Id, card.Data, replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
+                }
+            }
+            else
+            {
+                await bot.SendTextMessageAsync(user.Id, "Нет ни одной карточки");
+            }
+
+        }
+
+
         private static void RemoveUnfilledCards(TelegramUser user)
         {
             user.Cards.RemoveAll(c => string.IsNullOrEmpty(c.Title));
@@ -126,7 +191,7 @@ namespace ForgettingCurveBot
         {
             if (user.Cards.Count==0)
             {
-                await CreateNewCard(user, input);
+                await StartCreatingNewCard(user, input);
             }
             else
             {
@@ -138,7 +203,7 @@ namespace ForgettingCurveBot
                 }
                 else
                 {
-                    await CreateNewCard(user, input);
+                    await StartCreatingNewCard(user, input);
                 }
             }
         }
@@ -146,11 +211,11 @@ namespace ForgettingCurveBot
         private static async Task AddTitleForNewCard(CardToRemember lastCard, string input, TelegramUser user)
         {
             lastCard.Title = input;
-            string text = $"Создана карточка\n*{lastCard.Title}*\n{lastCard.Data}\n";
+            string text = $"Создана карточка:\n*{lastCard.Title}*\n{lastCard.Data}\n";
             await bot.SendTextMessageAsync(user.Id, text, replyMarkup: keyboardMarkup, parseMode: ParseMode.Markdown);
         }
 
-        private static async Task CreateNewCard(TelegramUser user, string input)
+        private static async Task StartCreatingNewCard(TelegramUser user, string input)
         {
             string text = $"Создание карточки с текстом '{input}'\n Введите название для карточки";
             CardToRemember card = new CardToRemember { Data = input, Type = TypeOfCard.Text };
@@ -158,7 +223,7 @@ namespace ForgettingCurveBot
             await bot.SendTextMessageAsync(user.Id, text, replyMarkup: keyboardMarkup);
         }
 
-        private static async System.Threading.Tasks.Task StartCommandAsync(long id)
+        private static async Task StartCommandAsync(long id)
         {
             await bot.SendTextMessageAsync(id, $"Добро пожаловать в суперсовременную систему запоминания! Для того чтобы начать, просто отправьте боту то, что хотите запомнить!", replyMarkup: keyboardMarkup);
         }
