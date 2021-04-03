@@ -1,10 +1,13 @@
-﻿using ForgettingCurveBot.Models;
+﻿using ForgettingCurveBot.Data;
+using ForgettingCurveBot.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -14,8 +17,8 @@ namespace ForgettingCurveBot
     class Program
     {
         private static TelegramBotClient bot;
-        private static List<TelegramUser> users = new();
         private static ReplyKeyboardMarkup keyboardMarkup;
+        private static DataProvider _cardDataProvider = new();
         
 
         static void Main(string[] args)
@@ -27,26 +30,33 @@ namespace ForgettingCurveBot
             bot.OnMessage += Bot_OnMessageReceived;
             bot.OnMessageEdited += Bot_OnMessageReceived;
             bot.OnCallbackQuery += Bot_OnCallbackQuery;
-            BotCommand botCommand = new BotCommand { Command = "\\start", Description = "Запускаем бота" };
-            
+
+            //TODO: Узнать зачем?
+            //BotCommand botCommand = new BotCommand { Command = "\\start", Description = "Запускаем бота2" };
+            //bot.SetMyCommandsAsync(new List<BotCommand> { botCommand });
+
             bot.StartReceiving();
-            bot.SetMyCommandsAsync(new List<BotCommand> { botCommand });
 
             Console.WriteLine("Бот запущен!");
             Console.ReadLine();
         }
 
-        private static async void Bot_OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
+        private static async void Bot_OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs args)
         {
-            long userId = e.CallbackQuery.Message.Chat.Id;
-            var user = users.FirstOrDefault(u => u.Id == userId);
-            
+            long userId = args.CallbackQuery.Message.Chat.Id;
+            var user = _cardDataProvider.LoadTelegramUser(userId);
+
             // Id of the tapped card
-            int cardId = int.Parse(e.CallbackQuery.Data.Split(':')[1]);
+            int cardId;
+            if(!int.TryParse(args.CallbackQuery.Data.Split(':')[1],out cardId))
+            {
+                Debug.WriteLine($"Could'n parse card with data {args.CallbackQuery.Data}");
+            }
+            
 
             // What user wants to do with the card
             // All cards have data like "d:23849893" where 23849893 is card's Id;
-            string shortCommandForCard = e.CallbackQuery.Data.Split(':')[0];
+            string shortCommandForCard = args.CallbackQuery.Data.Split(':')[0];
             switch (shortCommandForCard)
             {
                 case "d":
@@ -55,60 +65,74 @@ namespace ForgettingCurveBot
                     {
                         string cardTitle = cardToRemove.Title;
                         user.Cards.Remove(cardToRemove);
-                        await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Карта '{cardTitle}' удалена");
-                        await bot.DeleteMessageAsync(userId, e.CallbackQuery.Message.MessageId);
+                        await bot.AnswerCallbackQueryAsync(args.CallbackQuery.Id, $"Карта '{cardTitle}' удалена");
+                        await bot.DeleteMessageAsync(userId, args.CallbackQuery.Message.MessageId);
                     }
                     else
                     {
-                        await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Такой карты уже, похоже, нет");
-                        await bot.DeleteMessageAsync(userId, e.CallbackQuery.Message.MessageId);
+                        await bot.AnswerCallbackQueryAsync(args.CallbackQuery.Id, $"Такой карты уже, похоже, нет");
+                        await bot.DeleteMessageAsync(userId, args.CallbackQuery.Message.MessageId);
                     }
                     break;
                 case "v":
-                    var cardToShow = user.Cards.FirstOrDefault(c => c.Id == cardId);
-                    if (cardToShow == null)
+                    try
                     {
-                        await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Такой карты уже, похоже, нет");
-                        await bot.DeleteMessageAsync(userId, e.CallbackQuery.Message.MessageId);
-                        return;
+                        await ShowPretyCardAsync(args, user, cardId);
                     }
-                    InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] {
-                        new InlineKeyboardButton { CallbackData = $"d:{cardToShow.Id}", Text = "Удалить" },
-                        new InlineKeyboardButton { CallbackData = $"r:{cardToShow.Id}", Text = "Сбросить" },
-                        new InlineKeyboardButton { CallbackData = $"l:{cardToShow.Id}", Text = "Изучена" }
-                    };
-                    InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
-                    await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id);
-                    await bot.SendTextMessageAsync(user.Id,
-                        $"*{cardToShow.Title}*\n--------\n{cardToShow.Data}", replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
+                    catch (Exception ex)
+                    {
+                        await bot.SendTextMessageAsync(user.Id, "Не получилось выполнить предыдущую команду", replyMarkup: keyboardMarkup);
+                        Console.Write("Не получилось выполнить команду: ");
+                        Console.WriteLine(ex.Message);
+                    }
                     break;
                 default:
                     break;
             }
+            _cardDataProvider.SaveTelegramUser(user);
+        }
+
+        private static async Task ShowPretyCardAsync(CallbackQueryEventArgs e, TelegramUser user, int cardId)
+        {
+            var cardToShow = user.Cards.FirstOrDefault(c => c.Id == cardId);
+            if (cardToShow == null)
+            {
+                await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id, $"Такой карты уже, похоже, нет");
+                await bot.DeleteMessageAsync(user.Id, e.CallbackQuery.Message.MessageId);
+                return;
+            }
+
+            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup
+            (
+                   new InlineKeyboardButton[] {
+                        new InlineKeyboardButton { CallbackData = $"d:{cardToShow.Id}", Text = "Удалить" },
+                        new InlineKeyboardButton { CallbackData = $"r:{cardToShow.Id}", Text = "Сбросить" },
+                        new InlineKeyboardButton { CallbackData = $"l:{cardToShow.Id}", Text = "Изучена" }
+                    }
+            );
+
+
+            await bot.AnswerCallbackQueryAsync(e.CallbackQuery.Id);
+            await bot.SendTextMessageAsync(user.Id,
+                $"*{cardToShow.Title}*\n--------\n{cardToShow.Data}",
+                replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
         }
 
         private static async void Bot_OnMessageReceived(object sender, Telegram.Bot.Args.MessageEventArgs e)
         {
+            var user = _cardDataProvider.LoadTelegramUser(e.Message.Chat.Id);
             string input = e.Message.Text;
-            string text = $"{DateTime.Now}: {e.Message.Chat.FirstName} {e.Message.Chat.Id} {input}";
+            string text = $"Time:{DateTime.Now}\tName:{e.Message.Chat.FirstName}\tId:{e.Message.Chat.Id}\tType:{e.Message.Type}\tMessage:{input}";
+            
             System.IO.File.AppendAllText("data.log", $"{text}\n");
-            var user = new TelegramUser { Id = e.Message.Chat.Id, Nickname = e.Message.Chat.FirstName };
-            if (!users.Contains(user))
-            {
-                users.Add(user);
-            }
-            else
-            {
-                user = users[users.IndexOf(user)];
-            }
-      
             user.Messages[DateTimeOffset.Now] = text;
+
             Console.WriteLine(text);
-            Console.WriteLine(e.Message.Type);
+
             switch (input)
             {
                 case "/start":
-                    await StartCommandAsync(user.Id);
+                    await StartCommandAsync(user);
                     break;
                 case "/stop":
                     await StopCommandAsync(user.Id);
@@ -123,6 +147,7 @@ namespace ForgettingCurveBot
                     await AddNewCardAsync(user, input);
                     break;
             }
+            _cardDataProvider.SaveTelegramUser(user);
         }
 
         private static async Task ShowStatistics(TelegramUser user)
@@ -131,8 +156,8 @@ namespace ForgettingCurveBot
         }
 
         private static async Task StopCommandAsync(long id)
-        {
-            users.First(u => u.Id == id).Cards.Clear();
+        {   
+            //TODO DeleteCardsMaybe
             await bot.SendTextMessageAsync(id, $"Остановка бота! Все карточки удалены", replyMarkup: keyboardMarkup);
         }
 
@@ -143,12 +168,14 @@ namespace ForgettingCurveBot
             {
                 foreach (var card in user.Cards)
                 {
-                    InlineKeyboardButton inlineKeyboardButtonDelete = new InlineKeyboardButton { CallbackData = $"d:{card.Id}", Text = "Удалить" };
-                    InlineKeyboardButton inlineKeyboardButtonView = new InlineKeyboardButton { CallbackData = $"v:{card.Id}", Text = "Посмотреть" };
-                    InlineKeyboardButton inlineKeyboardButtonDone = new InlineKeyboardButton { CallbackData = $"l:{card.Id}", Text = "Изучена" };
-                    InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] { inlineKeyboardButtonDelete, inlineKeyboardButtonView, inlineKeyboardButtonDone };
+                    InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] {
+                        new InlineKeyboardButton { CallbackData = $"f:{card.Id}", Text = "🤷‍♂️‍" },
+                        new InlineKeyboardButton { CallbackData = $"v:{card.Id}", Text = "👀" },
+                        new InlineKeyboardButton { CallbackData = $"r:{card.Id}", Text = "✅" }
+                    };
                     InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
-                    await bot.SendTextMessageAsync(user.Id, card.Data, replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
+
+                    await bot.SendTextMessageAsync(user.Id, $"{card.Title}\n{PrettyPrint.Progress(card.Progress())}", replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
                 }
             } 
             else
@@ -168,7 +195,7 @@ namespace ForgettingCurveBot
                     InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] {
                         new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Удалить" },
                         new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Посмотреть" },
-                        new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Изучена" }
+                        new InlineKeyboardButton { CallbackData = $"{card.Title}", Text = "Помню" }
                     };
                     InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
                     await bot.SendTextMessageAsync(user.Id, card.Data, replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
@@ -211,10 +238,17 @@ namespace ForgettingCurveBot
         private static async Task AddTitleForNewCard(CardToRemember lastCard, string input, TelegramUser user)
         {
             lastCard.Title = input;
+            lastCard.Id = user.Cards.Max(c => c.Id) + 1;
             string text = $"Создана карточка:\n*{lastCard.Title}*\n{lastCard.Data}\n";
             await bot.SendTextMessageAsync(user.Id, text, replyMarkup: keyboardMarkup, parseMode: ParseMode.Markdown);
         }
 
+        /// <summary>
+        /// Adds new card without a Title. The next user's message will be the Title, if it's not a command
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="input"></param>
+        /// <returns></returns>
         private static async Task StartCreatingNewCard(TelegramUser user, string input)
         {
             string text = $"Создание карточки с текстом '{input}'\n Введите название для карточки";
@@ -223,9 +257,9 @@ namespace ForgettingCurveBot
             await bot.SendTextMessageAsync(user.Id, text, replyMarkup: keyboardMarkup);
         }
 
-        private static async Task StartCommandAsync(long id)
+        private static async Task StartCommandAsync(TelegramUser user)
         {
-            await bot.SendTextMessageAsync(id, $"Добро пожаловать в суперсовременную систему запоминания! Для того чтобы начать, просто отправьте боту то, что хотите запомнить!", replyMarkup: keyboardMarkup);
+            await bot.SendTextMessageAsync(user.Id, $"Добро пожаловать в суперсовременную систему запоминания! Для того чтобы начать, просто отправьте боту то, что хотите запомнить!", replyMarkup: keyboardMarkup);
         }
 
         private static ReplyKeyboardMarkup CreateCustomKeyboard()
