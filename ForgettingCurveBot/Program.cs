@@ -17,7 +17,7 @@ namespace ForgettingCurveBot
     class Program
     {
         private static TelegramBotClient bot;
-        private static ReplyKeyboardMarkup keyboardMarkup;
+        private static ReplyKeyboardMarkup keyboardMarkup = CreateCustomKeyboard();
         private static DataProvider _cardDataProvider = new();
         
 
@@ -25,15 +25,10 @@ namespace ForgettingCurveBot
         {
             string token = System.IO.File.ReadAllText(@"token");
             bot = new TelegramBotClient(token);
-            keyboardMarkup = CreateCustomKeyboard();
 
             bot.OnMessage += Bot_OnMessageReceived;
             bot.OnMessageEdited += Bot_OnMessageReceived;
             bot.OnCallbackQuery += Bot_OnCallbackQuery;
-
-            //TODO: Узнать зачем?
-            //BotCommand botCommand = new BotCommand { Command = "\\start", Description = "Запускаем бота2" };
-            //bot.SetMyCommandsAsync(new List<BotCommand> { botCommand });
 
             bot.StartReceiving();
 
@@ -52,7 +47,13 @@ namespace ForgettingCurveBot
             {
                 Debug.WriteLine($"Could'n parse card with data {args.CallbackQuery.Data}");
             }
-            
+
+            string text = $"Time:{DateTime.Now}\tName:{args.CallbackQuery.Message.Chat.FirstName}\tId:{userId}\tType:query\tMessage:{args.CallbackQuery.Data}";
+
+            System.IO.File.AppendAllText("data.log", $"{text}\n");
+            user.Messages[DateTimeOffset.Now] = text;
+
+            Console.WriteLine(text);
 
             // What user wants to do with the card
             // All cards have data like "d:23849893" where 23849893 is card's Id;
@@ -120,7 +121,7 @@ namespace ForgettingCurveBot
 
         private static async void Bot_OnMessageReceived(object sender, Telegram.Bot.Args.MessageEventArgs e)
         {
-            var user = _cardDataProvider.LoadTelegramUser(e.Message.Chat.Id);
+            var user = _cardDataProvider.LoadTelegramUser(e.Message.Chat.Id, e.Message.Chat.FirstName);
             string input = e.Message.Text;
             string text = $"Time:{DateTime.Now}\tName:{e.Message.Chat.FirstName}\tId:{e.Message.Chat.Id}\tType:{e.Message.Type}\tMessage:{input}";
             
@@ -128,25 +129,33 @@ namespace ForgettingCurveBot
             user.Messages[DateTimeOffset.Now] = text;
 
             Console.WriteLine(text);
-
-            switch (input)
+            try
             {
-                case "/start":
-                    await StartCommandAsync(user);
-                    break;
-                case "/stop":
-                    await StopCommandAsync(user.Id);
-                    break;
-                case "Показать все карточки":
-                    await ShowAllCards(user);
-                    break;
-                case "Статистика":
-                    await ShowStatistics(user);
-                    break;
-                default:
-                    await AddNewCardAsync(user, input);
-                    break;
+                switch (input)
+                {
+                    case "/start":
+
+                        await StartCommandAsync(user);
+                        break;
+                    case "/stop":
+                        await StopCommandAsync(user.Id);
+                        break;
+                    case "Показать все":
+                        await ShowAllCards(user);
+                        break;
+                    case "Статистика":
+                        await ShowStatistics(user);
+                        break;
+                    default:
+                        await AddNewCardAsync(user, input);
+                        break;
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            
             _cardDataProvider.SaveTelegramUser(user);
         }
 
@@ -175,7 +184,7 @@ namespace ForgettingCurveBot
                     };
                     InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
 
-                    await bot.SendTextMessageAsync(user.Id, $"{card.Title}\n{PrettyPrint.Progress(card.Progress())}", replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
+                    await bot.SendTextMessageAsync(user.Id, $"{card.Title}\n`------------------------------`\n_(текст карточки скрыт,\nпосмотреть 👀?)_\n{PrettyPrint.Progress(card.Progress())}", replyMarkup: inlineKeyboardMarkup, parseMode: ParseMode.Markdown);
                 }
             } 
             else
@@ -259,7 +268,40 @@ namespace ForgettingCurveBot
 
         private static async Task StartCommandAsync(TelegramUser user)
         {
-            await bot.SendTextMessageAsync(user.Id, $"Добро пожаловать в суперсовременную систему запоминания! Для того чтобы начать, просто отправьте боту то, что хотите запомнить!", replyMarkup: keyboardMarkup);
+
+            await bot.SendTextMessageAsync(user.Id, $"Добро пожаловать в суперсовременную систему запоминания! Для того чтобы начать, просто отправьте боту то, что хотите запомнить!\n\nМы добавили для вас несколько учебных карточек, чтобы Вам было проще понять как работает бот.", replyMarkup: keyboardMarkup);
+            await AddTutorialCards(user);
+          
+        }
+
+        private static async Task AddTutorialCards(TelegramUser user)
+        {
+            int maxId = user.Cards.Max(c => c.Id);
+            CardToRemember[] cards = new CardToRemember[]
+            {
+                new CardToRemember
+                {
+                    Id = Interlocked.Increment(ref maxId),
+                    Title = "Как добавить карточку?",
+                    Data = "Нет ничего проще! Нужно просто прислать боту сообщение. Затем бот попросит ввести заголовок для дарточки. Мы советуем писать заголовок в виде вопроса, но это не обязательно."
+                },
+                new CardToRemember
+                {
+                    Id = Interlocked.Increment(ref maxId),
+                    Title = "Как работает бот?",
+                    Data = "Бот использует кривую Эббингауза для того, чтобы напоминать Вам о том, что Вы хотели бы запомнить, как можно реже, но в то же время, когда Вы, скорее всего, еще помните. Бот также обучается и совершенствуется, поэтому он может не придерживаться строгих правил, а напоминать некоторым пользователям чаще, если им запоминание дается сложнее."
+                },new CardToRemember
+                {
+                    Id = Interlocked.Increment(ref maxId),
+                    Title = "Что показывает прогресс?",
+                    Data = "Прогресс показывает насколько карточка хорошо запомнена. Не пытайтесь получить прогресс 100% за один день. Для того, чтобы запомнить надолго, требуется в среднем 2-3 месяца, а для запоминания на всю жизнь - около 2х лет."
+                }
+            };
+            foreach (var card in cards)
+            {
+                user.Cards.Add(card);
+            }
+            await ShowAllCards(user);
         }
 
         private static ReplyKeyboardMarkup CreateCustomKeyboard()
@@ -269,18 +311,18 @@ namespace ForgettingCurveBot
             {
                 new KeyboardButton[]
                 {
-                    new KeyboardButton("Показать все карточки")
+                    new KeyboardButton("Показать все"),
+                    new KeyboardButton("Показать актуальные"),
+                    new KeyboardButton("Показать удаленные")
                 },
 
                 new KeyboardButton[]
                 {
-                    new KeyboardButton("Топ-1"),
-                    new KeyboardButton("Топ-3"),
-                    new KeyboardButton("Топ-5")
+                    new KeyboardButton("Включить уведомления"),
+                    new KeyboardButton("Отключить уведомления")
                 },
                 new KeyboardButton[]
                 {
-                    new KeyboardButton("Обучаться"),
                     new KeyboardButton("Статистика")
                 }
             };

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,11 +19,11 @@ namespace ForgettingCurveBot.Data
         private const int _delayOnRetry = 1000;
 
         /// <summary>
-        /// Never return null, if no eser exists this method creates a new one. Nickname can be added later if needed.
+        /// Never return null, if no eser exists this method creates a new one. Nickname can be added later if needed. It can be updated with every call.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public TelegramUser LoadTelegramUser(long id)
+        public TelegramUser LoadTelegramUser(long id, string nickname = "")
         {
             string _userFileName = $"user{id}.json";
 
@@ -35,7 +36,7 @@ namespace ForgettingCurveBot.Data
                     Id = id,
                     Cards = new List<CardToRemember>(),
                     Messages = new Dictionary<DateTimeOffset, string>(),
-                    Nickname = ""
+                    Nickname = nickname
                 };
             }
             else
@@ -47,10 +48,12 @@ namespace ForgettingCurveBot.Data
                     {
                         var json = File.ReadAllText(_userFileName);
                         telegramUser = JsonConvert.DeserializeObject<TelegramUser>(json);
+                        telegramUser.Nickname = nickname;
                         break;
                     }
                     catch (IOException e) when (i <= _numberOfRetries)
                     {
+                        Console.WriteLine(e.Message);
                         Thread.Sleep(_delayOnRetry);
                     }
                 }
@@ -74,9 +77,25 @@ namespace ForgettingCurveBot.Data
                 }
                 catch (IOException e) when (i <= _numberOfRetries)
                 {
+                    Console.WriteLine(e.Message);
                     Thread.Sleep(_delayOnRetry);
                 }
             }
         }
+
+        public IEnumerable<TelegramUser> LoadAllUsers()
+        {
+            var users = new List<TelegramUser>();
+            Regex reg = new Regex(@"user([0-9]+)\.json$");
+            var files = Directory.GetFiles(Environment.CurrentDirectory, "*.json").Where(path => reg.IsMatch(path));
+            foreach (var file in files)
+            {
+                long userId = long.Parse(reg.Match(file).Groups[1].ToString());
+                users.Add(LoadTelegramUser(userId));
+            }
+
+            return users;
+        }
+
     }
 }
