@@ -87,6 +87,21 @@ namespace ForgettingCurveBot
                         Console.WriteLine(ex.Message);
                     }
                     break;
+                case Codes.Forgot:
+                case Codes.Remember:
+                case Codes.Restore:
+                    try
+                    {
+                        await bot.AnswerCallbackQueryAsync(args.CallbackQuery.Id, $"Пока не реализовано");
+                    }
+                    catch (Exception ex)
+                    {
+                        await bot.SendTextMessageAsync(user.Id, "Функционал для данной кнопки пока не реализован", replyMarkup: keyboardMarkup);
+                        Console.Write("Попытка выполнить нереализованную команду: ");
+                        Console.WriteLine(ex.Message);
+                        throw;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -144,12 +159,10 @@ namespace ForgettingCurveBot
                         await ShowAllCards(user);
                         break;
                     case TextCommands.ShowActual:
-                        break;
                     case TextCommands.ShowDeleted:
-                        break;
                     case TextCommands.TurnNotificationsOn:
-                        break;
                     case TextCommands.TurnNotificationsOff:
+                        await ShowNotRealized(user);
                         break;
                     case TextCommands.Statistics:
                         await ShowStatistics(user);
@@ -172,6 +185,10 @@ namespace ForgettingCurveBot
             await bot.SendTextMessageAsync(user.Id, $"Всего карточек: {user.Cards.Count}", replyMarkup: keyboardMarkup);
         }
 
+        private static async Task ShowNotRealized(TelegramUser user)
+        {
+            await bot.SendTextMessageAsync(user.Id, $"Данная кнопка пока не работает", replyMarkup: keyboardMarkup);
+        }
         private static async Task StopCommandAsync(long id)
         {   
             //TODO DeleteCardsMaybe
@@ -285,7 +302,11 @@ namespace ForgettingCurveBot
 
         private static async Task AddTutorialCards(TelegramUser user)
         {
-            int maxId = user.Cards.Max(c => c.Id);
+            int maxId = 1;
+            if (user.Cards.Count > 0)
+            {
+                maxId = user.Cards.Max(c => c.Id);
+            }
             CardToRemember[] cards = new CardToRemember[]
             {
                 new CardToRemember
