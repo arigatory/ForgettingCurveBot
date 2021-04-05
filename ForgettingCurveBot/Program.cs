@@ -60,7 +60,7 @@ namespace ForgettingCurveBot
             string shortCommandForCard = args.CallbackQuery.Data.Split(':')[0];
             switch (shortCommandForCard)
             {
-                case "d":
+                case Codes.Delete:
                     var cardToRemove = user.Cards.FirstOrDefault(c => c.Id == cardId);
                     if (cardToRemove != null)
                     {
@@ -75,7 +75,7 @@ namespace ForgettingCurveBot
                         await bot.DeleteMessageAsync(userId, args.CallbackQuery.Message.MessageId);
                     }
                     break;
-                case "v":
+                case Codes.View:
                     try
                     {
                         await ShowPretyCardAsync(args, user, cardId);
@@ -106,9 +106,9 @@ namespace ForgettingCurveBot
             InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup
             (
                    new InlineKeyboardButton[] {
-                        new InlineKeyboardButton { CallbackData = $"d:{cardToShow.Id}", Text = "Удалить" },
-                        new InlineKeyboardButton { CallbackData = $"r:{cardToShow.Id}", Text = "Сбросить" },
-                        new InlineKeyboardButton { CallbackData = $"l:{cardToShow.Id}", Text = "Изучена" }
+                        new InlineKeyboardButton { CallbackData = $"{Codes.Remember}:{cardToShow.Id}", Text = "Помню" },
+                        new InlineKeyboardButton { CallbackData = $"{Codes.Forgot}:{cardToShow.Id}", Text = "Не помню" },
+                        new InlineKeyboardButton { CallbackData = $"{Codes.Delete}:{cardToShow.Id}", Text = "Удалить" }
                     }
             );
 
@@ -140,10 +140,18 @@ namespace ForgettingCurveBot
                     case "/stop":
                         await StopCommandAsync(user.Id);
                         break;
-                    case "Показать все":
+                    case TextCommands.ShowAll:
                         await ShowAllCards(user);
                         break;
-                    case "Статистика":
+                    case TextCommands.ShowActual:
+                        break;
+                    case TextCommands.ShowDeleted:
+                        break;
+                    case TextCommands.TurnNotificationsOn:
+                        break;
+                    case TextCommands.TurnNotificationsOff:
+                        break;
+                    case TextCommands.Statistics:
                         await ShowStatistics(user);
                         break;
                     default:
@@ -178,9 +186,10 @@ namespace ForgettingCurveBot
                 foreach (var card in user.Cards)
                 {
                     InlineKeyboardButton[] inlineKeyboardButtons = new InlineKeyboardButton[] {
-                        new InlineKeyboardButton { CallbackData = $"f:{card.Id}", Text = "🤷‍♂️‍" },
-                        new InlineKeyboardButton { CallbackData = $"v:{card.Id}", Text = "👀" },
-                        new InlineKeyboardButton { CallbackData = $"r:{card.Id}", Text = "✅" }
+                        new InlineKeyboardButton { CallbackData = $"{Codes.Forgot}:{card.Id}", Text = "🤷‍♂️‍" },
+                        new InlineKeyboardButton { CallbackData = $"{Codes.View}:{card.Id}", Text = "👀" },
+                        new InlineKeyboardButton { CallbackData = $"{Codes.Delete}:{card.Id}", Text = "🗑️" },
+                        new InlineKeyboardButton { CallbackData = $"{Codes.Remember}:{card.Id}", Text = "✅" }
                     };
                     InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup(inlineKeyboardButtons);
 
@@ -311,19 +320,19 @@ namespace ForgettingCurveBot
             {
                 new KeyboardButton[]
                 {
-                    new KeyboardButton("Показать все"),
-                    new KeyboardButton("Показать актуальные"),
-                    new KeyboardButton("Показать удаленные")
+                    new KeyboardButton(TextCommands.ShowAll),
+                    new KeyboardButton(TextCommands.ShowActual),
+                    new KeyboardButton(TextCommands.ShowDeleted)
                 },
 
                 new KeyboardButton[]
                 {
-                    new KeyboardButton("Включить уведомления"),
-                    new KeyboardButton("Отключить уведомления")
+                    new KeyboardButton(TextCommands.TurnNotificationsOn),
+                    new KeyboardButton(TextCommands.TurnNotificationsOff),
                 },
                 new KeyboardButton[]
                 {
-                    new KeyboardButton("Статистика")
+                    new KeyboardButton(TextCommands.Statistics)
                 }
             };
             return rkm;
