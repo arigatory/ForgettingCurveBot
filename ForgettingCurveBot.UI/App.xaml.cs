@@ -1,4 +1,6 @@
-﻿using ForgettingCurveBot.UI.Data;
+﻿using Autofac;
+using ForgettingCurveBot.UI.Data;
+using ForgettingCurveBot.UI.Startup;
 using ForgettingCurveBot.UI.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -17,7 +19,10 @@ namespace ForgettingCurveBot.UI
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var mainWindow = new MainWindow(new MainViewModel(new TelegramUserDataService()));
+            var bootstrapper = new Bootstrapper();
+            var container = bootstrapper.Bootstrap();
+
+            var mainWindow = container.Resolve<MainWindow>();
             mainWindow.Show();
         }
     }
