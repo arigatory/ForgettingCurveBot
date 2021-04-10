@@ -23,8 +23,6 @@ namespace ForgettingCurveBot.UI.ViewModel
         public ObservableCollection<TelegramUser> Users { get; set; } = new();
 
 
-
-
         public TelegramUser SelectedUser
         {
             get { return _selectedUser; }
@@ -34,7 +32,6 @@ namespace ForgettingCurveBot.UI.ViewModel
                 OnPropertyChanged();
             }
         }
-
 
         public void Load()
         {
