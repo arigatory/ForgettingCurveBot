@@ -6,6 +6,5 @@ namespace ForgettingCurveBot.UI.Data
     public interface ITelegramUserDataService
     {
         IEnumerable<TelegramUser> GetAll();
-        TelegramUser LoadTelegramUser(long id, string nickname = "");
     }
 }

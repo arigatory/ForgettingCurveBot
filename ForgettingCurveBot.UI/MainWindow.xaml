@@ -22,6 +22,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             
@@ -34,6 +35,11 @@
             <TextBox Grid.Row="3" 
                      Text="{Binding SelectedUser.Nickname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      Margin="10 0 10 10"/>
+
+            <Label Grid.Row="4" Content="Отправить сообщение" Margin="10 0"/>
+            <TextBox Grid.Row="5" 
+                     Margin="10 0 10 10"/>
+            <Button Grid.Row="6" Content="Отправить" Width="150" HorizontalAlignment="Right" Margin="10 0"/>
         </Grid>
     </Grid>
 </Window>
