@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgettingCurveBot", "ForgettingCurveBot\ForgettingCurveBot.csproj", "{CD2C6A47-8031-4578-8542-29C0A1074102}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForgettingCurveBot", "ForgettingCurveBot\ForgettingCurveBot.csproj", "{CD2C6A47-8031-4578-8542-29C0A1074102}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgettingCurveBot.UI", "ForgettingCurveBot.UI\ForgettingCurveBot.UI.csproj", "{A4ECB6EE-0DF4-414D-B909-476AA886FDEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgetttingCurveBot.DataAccess", "ForgetttingCurveBot.DataAccess\ForgetttingCurveBot.DataAccess.csproj", "{D557FBC7-5123-4801-AC47-47542AD3022F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgettingCurveBot.Model", "ForgettingCurveBot.Model\ForgettingCurveBot.Model.csproj", "{11515458-1AED-41BD-9F60-73A34AAA5578}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{CD2C6A47-8031-4578-8542-29C0A1074102}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD2C6A47-8031-4578-8542-29C0A1074102}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD2C6A47-8031-4578-8542-29C0A1074102}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4ECB6EE-0DF4-414D-B909-476AA886FDEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4ECB6EE-0DF4-414D-B909-476AA886FDEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4ECB6EE-0DF4-414D-B909-476AA886FDEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4ECB6EE-0DF4-414D-B909-476AA886FDEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D557FBC7-5123-4801-AC47-47542AD3022F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D557FBC7-5123-4801-AC47-47542AD3022F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D557FBC7-5123-4801-AC47-47542AD3022F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D557FBC7-5123-4801-AC47-47542AD3022F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11515458-1AED-41BD-9F60-73A34AAA5578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11515458-1AED-41BD-9F60-73A34AAA5578}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11515458-1AED-41BD-9F60-73A34AAA5578}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11515458-1AED-41BD-9F60-73A34AAA5578}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
