@@ -1,5 +1,6 @@
 ﻿using ForgettingCurveBot.Model;
 using ForgettingCurveBot.UI.Data;
+using ForgettingCurveBot.UI.Data.Lookups;
 using ForgettingCurveBot.UI.Event;
 using Prism.Events;
 using System;

@@ -13,7 +13,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <view:NavigationView DataContext="{Binding NavigationViewModel}"/>
-        <view:UserDetailView Grid.Column="1" DataContext="{Binding UserDetailViewModel}"/>
+        <view:TelegramUserDetailView Grid.Column="1" DataContext="{Binding TelegramUserDetailViewModel}"/>
        
     </Grid>
 </Window>

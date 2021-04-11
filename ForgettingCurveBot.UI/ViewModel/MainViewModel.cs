@@ -1,29 +1,63 @@
-﻿using ForgettingCurveBot.Model;
-using ForgettingCurveBot.UI.Data;
+﻿using ForgettingCurveBot.UI.Event;
+using Prism.Events;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ForgettingCurveBot.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
+        private readonly Func<ITelegramUserDetailViewModel> _telegramUserDetailViewModelCreator;
+        private readonly IEventAggregator _eventAggregator;
+        private ITelegramUserDetailViewModel _telegramUserDetailViewModel;
+
+
         public MainViewModel(INavigationViewModel navigationViewModel,
-            IUserDetailViewModel userDetailViewModel)
+            Func<ITelegramUserDetailViewModel> telegramUserDetailViewModelCreator,
+            IEventAggregator eventAggregator)
         {
             NavigationViewModel = navigationViewModel;
-            UserDetailViewModel = userDetailViewModel;
+            _telegramUserDetailViewModelCreator = telegramUserDetailViewModelCreator;
+            _eventAggregator = eventAggregator;
+            _eventAggregator.GetEvent<OpenTelegramUserDetailViewEvent>()
+                .Subscribe(OnOpenTelegramUserDetailView);
+
+            NavigationViewModel = navigationViewModel;
         }
 
         public INavigationViewModel NavigationViewModel { get; }
-        public IUserDetailViewModel UserDetailViewModel { get; }
+
+
+        public ITelegramUserDetailViewModel TelegramUserDetailViewModel
+        {
+            get { return _telegramUserDetailViewModel; }
+            private set
+            {
+                _telegramUserDetailViewModel = value;
+                OnPropertyChanged();
+            }
+        }
+
+
 
         public async Task LoadAsync()
         {
             await NavigationViewModel.LoadAsync();
+        }
+
+        private async void OnOpenTelegramUserDetailView(long userId)
+        {
+            if (TelegramUserDetailViewModel!=null && TelegramUserDetailViewModel.HasChanges)
+            {
+                var result = MessageBox.Show("Были сделаны изменения, переключить пользователя?","Вопрос", MessageBoxButton.OKCancel);
+                if (result == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+            }
+            TelegramUserDetailViewModel = _telegramUserDetailViewModelCreator();
+            await _telegramUserDetailViewModel.LoadAsync(userId);
         }
     }
 }

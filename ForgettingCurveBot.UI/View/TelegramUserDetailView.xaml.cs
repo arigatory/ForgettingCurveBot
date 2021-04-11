@@ -18,9 +18,9 @@ namespace ForgettingCurveBot.UI.View
     /// <summary>
     /// Interaction logic for UserDetailView.xaml
     /// </summary>
-    public partial class UserDetailView : UserControl
+    public partial class TelegramUserDetailView : UserControl
     {
-        public UserDetailView()
+        public TelegramUserDetailView()
         {
             InitializeComponent();
         }

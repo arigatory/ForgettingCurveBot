@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ForgettingCurveBot.UI.Data
+namespace ForgettingCurveBot.UI.Data.Lookups
 {
     public class LookupDataService : IUserLookupDataService
     {

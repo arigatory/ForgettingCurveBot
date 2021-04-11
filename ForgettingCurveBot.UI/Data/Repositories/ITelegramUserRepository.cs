@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ForgettingCurveBot.UI.Data
+namespace ForgettingCurveBot.UI.Data.Repositories
 {
-    public interface ITelegramUserDataService
+    public interface ITelegramUserRepository
     {
         Task<TelegramUser> GetByIdAsync(long userId);
-        Task SaveAsync(TelegramUser telegramUser);
+        Task SaveAsync();
+        bool HasChanges();
     }
 }

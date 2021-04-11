@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ForgettingCurveBot.UI.Data
+namespace ForgettingCurveBot.UI.Data.Lookups
 {
     public interface IUserLookupDataService
     {
