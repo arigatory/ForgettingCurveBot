@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Pictures\workers-logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac" Version="6.1.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
@@ -16,6 +20,10 @@
   <ItemGroup>
     <ProjectReference Include="..\ForgettingCurveBot.Model\ForgettingCurveBot.Model.csproj" />
     <ProjectReference Include="..\ForgetttingCurveBot.DataAccess\ForgetttingCurveBot.DataAccess.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Pictures\workers-logo.png" />
   </ItemGroup>
 
 </Project>

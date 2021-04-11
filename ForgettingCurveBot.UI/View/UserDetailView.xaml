@@ -15,22 +15,52 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
 
         <Label Content="Id" Margin="10 10 10 0"/>
         <TextBox Grid.Row="1" 
-                     Text="{Binding User.Id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="10 0 10 10"/>
+                     Text="{Binding User.Id, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="10 0 10 10" IsEnabled="False"/>
 
-        <Label Grid.Row="2" Content="NickName" Margin="10 0"/>
+        <Label Grid.Row="2" Content="TelegramId" Margin="10 0"/>
         <TextBox Grid.Row="3" 
+                     Text="{Binding User.TelegramIdentification, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="10 0 10 10" IsEnabled="False"/>
+
+        <Image Grid.Column="1" Grid.RowSpan="7"
+               Source="/Pictures/workers-logo.png"
+               MaxWidth="200"
+               Margin="10"
+               VerticalAlignment="Bottom"
+               HorizontalAlignment="Center"/>
+
+        <Label Grid.Row="4" Content="NickName" Margin="10 0"/>
+        <TextBox Grid.Row="5" 
                      Text="{Binding User.Nickname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      Margin="10 0 10 10"/>
 
-        <Label Grid.Row="4" Content="Отправить сообщение" Margin="10 0"/>
-        <TextBox Grid.Row="5" 
+        <Label Grid.Row="6" Content="Отправить сообщение" Margin="10 0"/>
+        <TextBox Grid.Row="7" 
                      Margin="10 0 10 10"/>
-        <Button Grid.Row="6" Content="Отправить" Width="150" HorizontalAlignment="Right" Margin="10 0"/>
+        <Button Grid.Row="7" Grid.Column="1" Content="Отправить" Width="150" HorizontalAlignment="Left" Margin="10" Height="40" VerticalAlignment="Bottom"/>
+
+        <Label Grid.Row="8" Content="Карточки" Margin="10 0"/>
+        <DataGrid Grid.Row="9" Grid.ColumnSpan="2" ItemsSource="{Binding User.Cards}" AutoGenerateColumns="True" Margin="10">
+            
+        </DataGrid>
+
+
+        <StackPanel Grid.Row="10" Orientation="Horizontal">
+            <Button Content="Сохранить" Width="150" Margin="10"
+                    Command="{Binding SaveCommand}"/>
+        </StackPanel>
     </Grid>
 </UserControl>

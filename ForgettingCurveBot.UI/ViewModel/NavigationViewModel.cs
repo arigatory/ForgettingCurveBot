@@ -2,7 +2,9 @@
 using ForgettingCurveBot.UI.Data;
 using ForgettingCurveBot.UI.Event;
 using Prism.Events;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ForgettingCurveBot.UI.ViewModel
@@ -17,13 +19,20 @@ namespace ForgettingCurveBot.UI.ViewModel
         {
             _userLookupDataService = userLookupDataService;
             _eventAggregator = eventAggregator;
+            _eventAggregator.GetEvent<AfterTelegramUserSavedEvent>().Subscribe(AfterTelegramUserSaved);
         }
 
-        public ObservableCollection<LookupItem> Users { get; } = new();
+        private void AfterTelegramUserSaved(AfterTelegramUserSavedEventArgs obj)
+        {
+            var lookupItem = Users.Single(l => l.Id == obj.Id);
+            lookupItem.DisplayMember = obj.DisplayMember;
+        }
 
-        private LookupItem _selectedUser;
+        public ObservableCollection<NavigationItemViewModel> Users { get; } = new();
 
-        public LookupItem SelectedUser
+        private NavigationItemViewModel _selectedUser;
+
+        public NavigationItemViewModel SelectedUser
         {
             get { return _selectedUser; }
             set
@@ -45,7 +54,7 @@ namespace ForgettingCurveBot.UI.ViewModel
             Users.Clear();
             foreach (var item in lookup)
             {
-                Users.Add(item);
+                Users.Add(new NavigationItemViewModel(item.Id, item.DisplayMember));
             }
         }
     }

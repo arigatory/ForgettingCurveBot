@@ -24,5 +24,15 @@ namespace ForgettingCurveBot.UI.Data
                 return await ctx.Users.AsNoTracking().SingleAsync(u => u.Id == userId);
             }
         }
+
+        public async Task SaveAsync(TelegramUser telegramUser)
+        {
+            using (var ctx = _contextCreator())
+            {
+                ctx.Users.Attach(telegramUser);
+                ctx.Entry(telegramUser).State = EntityState.Modified;
+                await ctx.SaveChangesAsync();
+            }
+        }
     }
 }
