@@ -1,17 +1,13 @@
 ﻿using ForgettingCurveBot.Model;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ForgettingCurveBot.UI.Wrapper
 {
-    public class TelegramUserWrapper : NotifyDataErrorInfoBase
-    {
-        public TelegramUserWrapper(TelegramUser model)
-        {
-            Model = model;
-        }
 
-        public TelegramUser Model { get; }
+    public class TelegramUserWrapper : ModelWrapper<TelegramUser>
+    {
+        public TelegramUserWrapper(TelegramUser model) : base(model)
+        {
+        }
 
         public long Id { get { return Model.Id; } }
         public long TelegramIdentification { get { return Model.TelegramIdentification; } }
@@ -19,11 +15,10 @@ namespace ForgettingCurveBot.UI.Wrapper
 
         public string Nickname
         {
-            get { return Model.Nickname; }
+            get { return GetValue<string>(); }
             set
             {
-                Model.Nickname = value;
-                OnPropertyChanged();
+                SetValue(value);
             }
         }
     }
