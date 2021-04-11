@@ -4,42 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ForgettingCurveBot.UI"
+        xmlns:view="clr-namespace:ForgettingCurveBot.UI.View"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" FontSize="20">
+        Title="ForgettingCurveBot" Height="450" Width="800" FontSize="20">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <ListView ItemsSource="{Binding Users}"
-                  SelectedItem="{Binding SelectedUser,Mode=TwoWay}"
-                  DisplayMemberPath="Id"/>
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            
-            <Label Content="Id" Margin="10 10 10 0"/>
-            <TextBox Grid.Row="1" 
-                     Text="{Binding SelectedUser.Id, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="10 0 10 10"/>
-            
-            <Label Grid.Row="2" Content="NickName" Margin="10 0"/>
-            <TextBox Grid.Row="3" 
-                     Text="{Binding SelectedUser.Nickname, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="10 0 10 10"/>
-
-            <Label Grid.Row="4" Content="Отправить сообщение" Margin="10 0"/>
-            <TextBox Grid.Row="5" 
-                     Margin="10 0 10 10"/>
-            <Button Grid.Row="6" Content="Отправить" Width="150" HorizontalAlignment="Right" Margin="10 0"/>
-        </Grid>
+        <view:NavigationView DataContext="{Binding NavigationViewModel}"/>
+        <view:UserDetailView Grid.Column="1" DataContext="{Binding UserDetailViewModel}"/>
+       
     </Grid>
 </Window>

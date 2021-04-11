@@ -11,36 +11,19 @@ namespace ForgettingCurveBot.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private readonly ITelegramUserDataService _telegramUserDataService;
-        private TelegramUser _selectedUser;
-
-
-        public MainViewModel(ITelegramUserDataService telegramUserDataService)
+        public MainViewModel(INavigationViewModel navigationViewModel,
+            IUserDetailViewModel userDetailViewModel)
         {
-            _telegramUserDataService = telegramUserDataService;
+            NavigationViewModel = navigationViewModel;
+            UserDetailViewModel = userDetailViewModel;
         }
 
-        public ObservableCollection<TelegramUser> Users { get; set; } = new();
+        public INavigationViewModel NavigationViewModel { get; }
+        public IUserDetailViewModel UserDetailViewModel { get; }
 
-
-        public TelegramUser SelectedUser
+        public async Task LoadAsync()
         {
-            get { return _selectedUser; }
-            set
-            {
-                _selectedUser = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public void Load()
-        {
-            var users = _telegramUserDataService.GetAll();
-            Users.Clear();
-            foreach (var user in users)
-            {
-                Users.Add(user);
-            }
+            await NavigationViewModel.LoadAsync();
         }
     }
 }

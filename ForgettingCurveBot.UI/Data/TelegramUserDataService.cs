@@ -1,21 +1,27 @@
 ﻿using ForgettingCurveBot.Model;
 using ForgetttingCurveBot.DataAccess;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ForgettingCurveBot.UI.Data
 {
     public class TelegramUserDataService : ITelegramUserDataService
     {
-        public TelegramUserDataService()
+        private readonly Func<ForgettingCurveBotDbContext> _contextCreator;
+
+        public TelegramUserDataService(Func<ForgettingCurveBotDbContext> contextCreator)
         {
+            _contextCreator = contextCreator;
         }
 
-        public IEnumerable<TelegramUser> GetAll()
+        public async Task<TelegramUser> GetByIdAsync(long userId)
         {
-            using (var ctx = new ForgettingCurveBotDbContext())
+            using (var ctx = _contextCreator())
             {
-                return ctx.Users.AsNoTracking().ToList();
+                return await ctx.Users.AsNoTracking().SingleAsync(u => u.Id == userId);
             }
         }
     }

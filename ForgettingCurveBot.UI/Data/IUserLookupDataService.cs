@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 
 namespace ForgettingCurveBot.UI.Data
 {
-    public interface ITelegramUserDataService
+    public interface IUserLookupDataService
     {
-        Task<TelegramUser> GetByIdAsync(long userId);
+        Task<IEnumerable<LookupItem>> GetUsersLookupAsync();
     }
 }
