@@ -1,8 +1,8 @@
 ﻿using ForgettingCurveBot.UI.Event;
+using ForgettingCurveBot.UI.View.Services;
 using Prism.Events;
 using System;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace ForgettingCurveBot.UI.ViewModel
 {
@@ -10,16 +10,19 @@ namespace ForgettingCurveBot.UI.ViewModel
     {
         private readonly Func<ITelegramUserDetailViewModel> _telegramUserDetailViewModelCreator;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IMessageDialogService _messageDialogService;
         private ITelegramUserDetailViewModel _telegramUserDetailViewModel;
 
 
         public MainViewModel(INavigationViewModel navigationViewModel,
             Func<ITelegramUserDetailViewModel> telegramUserDetailViewModelCreator,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            IMessageDialogService messageDialogService)
         {
             NavigationViewModel = navigationViewModel;
             _telegramUserDetailViewModelCreator = telegramUserDetailViewModelCreator;
             _eventAggregator = eventAggregator;
+            _messageDialogService = messageDialogService;
             _eventAggregator.GetEvent<OpenTelegramUserDetailViewEvent>()
                 .Subscribe(OnOpenTelegramUserDetailView);
 
@@ -50,8 +53,8 @@ namespace ForgettingCurveBot.UI.ViewModel
         {
             if (TelegramUserDetailViewModel!=null && TelegramUserDetailViewModel.HasChanges)
             {
-                var result = MessageBox.Show("Были сделаны изменения, переключить пользователя?","Вопрос", MessageBoxButton.OKCancel);
-                if (result == MessageBoxResult.Cancel)
+                var result = _messageDialogService.ShowOkCancelDialog("Были сделаны изменения, переключить пользователя?","Вопрос");
+                if (result == MessageDialogResult.Cancel)
                 {
                     return;
                 }
