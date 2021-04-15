@@ -1,8 +1,12 @@
-﻿using System;
+﻿using ForgettingCurveBot.UI.Event;
+using Prism.Commands;
+using Prism.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace ForgettingCurveBot.UI.ViewModel
 {
@@ -10,11 +14,16 @@ namespace ForgettingCurveBot.UI.ViewModel
     {
         private string _displayMember;
 
-        public NavigationItemViewModel(long id, string displayMember)
+        public NavigationItemViewModel(long id, string displayMember,
+            IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             Id = id;
             DisplayMember = displayMember;
+            OpenTeregramUserDetailViewCommand = new DelegateCommand(OnOpenTelegramUserDeatailView);
         }
+
+        private IEventAggregator _eventAggregator;
 
         public long Id { get; }
         public string DisplayMember
@@ -25,6 +34,14 @@ namespace ForgettingCurveBot.UI.ViewModel
                 _displayMember = value;
                 OnPropertyChanged();
             }
+        }
+
+        public ICommand OpenTeregramUserDetailViewCommand { get; }
+
+        private void OnOpenTelegramUserDeatailView()
+        {
+            _eventAggregator.GetEvent<OpenTelegramUserDetailViewEvent>()
+                       .Publish(Id);
         }
     }
 }

@@ -31,31 +31,13 @@ namespace ForgettingCurveBot.UI.ViewModel
 
         public ObservableCollection<NavigationItemViewModel> Users { get; } = new();
 
-        private NavigationItemViewModel _selectedUser;
-
-        public NavigationItemViewModel SelectedUser
-        {
-            get { return _selectedUser; }
-            set
-            {
-                _selectedUser = value;
-                OnPropertyChanged();
-                if (_selectedUser!=null)
-                {
-                    _eventAggregator.GetEvent<OpenTelegramUserDetailViewEvent>()
-                        .Publish(_selectedUser.Id);
-                }
-            }
-        }
-
-
         public async Task LoadAsync()
         {
             var lookup = await _userLookupDataService.GetUsersLookupAsync();
             Users.Clear();
             foreach (var item in lookup)
             {
-                Users.Add(new NavigationItemViewModel(item.Id, item.DisplayMember));
+                Users.Add(new NavigationItemViewModel(item.Id, item.DisplayMember, _eventAggregator));
             }
         }
     }
