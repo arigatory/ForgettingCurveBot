@@ -8,12 +8,25 @@
         mc:Ignorable="d"
         Title="ForgettingCurveBot" Height="450" Width="800" FontSize="20">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <view:NavigationView DataContext="{Binding NavigationViewModel}"/>
-        <view:TelegramUserDetailView Grid.Column="1" DataContext="{Binding TelegramUserDetailViewModel}"/>
+        <Menu Grid.ColumnSpan="2" FontSize="20">
+            <MenuItem Header="Добавить">
+                <MenuItem Header="Новый пользователь" Command="{Binding CreateNewTelegramUserCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <view:NavigationView Grid.Row="1" 
+                             DataContext="{Binding NavigationViewModel}"/>
+        <view:TelegramUserDetailView Grid.Column="1"
+                                     Grid.Row="1"
+                                     DataContext="{Binding TelegramUserDetailViewModel}"/>
        
     </Grid>
 </Window>
