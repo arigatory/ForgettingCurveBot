@@ -1,8 +1,10 @@
 ﻿using ForgettingCurveBot.UI.Event;
 using ForgettingCurveBot.UI.View.Services;
+using Prism.Commands;
 using Prism.Events;
 using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace ForgettingCurveBot.UI.ViewModel
 {
@@ -26,8 +28,12 @@ namespace ForgettingCurveBot.UI.ViewModel
             _eventAggregator.GetEvent<OpenTelegramUserDetailViewEvent>()
                 .Subscribe(OnOpenTelegramUserDetailView);
 
+            CreateNewTelegramUserCommand = new DelegateCommand(OnCreateNewTelegramUserExecute);
+
             NavigationViewModel = navigationViewModel;
         }
+
+
 
         public INavigationViewModel NavigationViewModel { get; }
 
@@ -49,7 +55,10 @@ namespace ForgettingCurveBot.UI.ViewModel
             await NavigationViewModel.LoadAsync();
         }
 
-        private async void OnOpenTelegramUserDetailView(long userId)
+        public ICommand CreateNewTelegramUserCommand { get; }
+
+
+        private async void OnOpenTelegramUserDetailView(long? userId)
         {
             if (TelegramUserDetailViewModel!=null && TelegramUserDetailViewModel.HasChanges)
             {
@@ -61,6 +70,11 @@ namespace ForgettingCurveBot.UI.ViewModel
             }
             TelegramUserDetailViewModel = _telegramUserDetailViewModelCreator();
             await _telegramUserDetailViewModel.LoadAsync(userId);
+        }
+
+        private void OnCreateNewTelegramUserExecute()
+        {
+            OnOpenTelegramUserDetailView(null);
         }
     }
 }

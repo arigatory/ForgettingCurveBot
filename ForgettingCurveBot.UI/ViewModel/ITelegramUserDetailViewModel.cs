@@ -4,7 +4,7 @@ namespace ForgettingCurveBot.UI.ViewModel
 {
     public interface ITelegramUserDetailViewModel
     {
-        Task LoadAsync(long userId);
+        Task LoadAsync(long? userId);
         bool HasChanges { get; }
     }
 }

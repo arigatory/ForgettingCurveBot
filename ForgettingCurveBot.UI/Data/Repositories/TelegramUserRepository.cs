@@ -17,6 +17,11 @@ namespace ForgettingCurveBot.UI.Data.Repositories
             _context = context;
         }
 
+        public void Add(TelegramUser user)
+        {
+            _context.Users.Add(user);
+        }
+
         public async Task<TelegramUser> GetByIdAsync(long userId)
         {
             return await _context.Users.SingleAsync(u => u.Id == userId);
@@ -31,6 +36,5 @@ namespace ForgettingCurveBot.UI.Data.Repositories
         {
             await _context.SaveChangesAsync();
         }
-
     }
 }

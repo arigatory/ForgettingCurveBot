@@ -9,5 +9,6 @@ namespace ForgettingCurveBot.UI.Data.Repositories
         Task<TelegramUser> GetByIdAsync(long userId);
         Task SaveAsync();
         bool HasChanges();
+        void Add(TelegramUser user);
     }
 }

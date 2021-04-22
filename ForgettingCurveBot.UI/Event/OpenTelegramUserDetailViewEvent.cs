@@ -2,7 +2,7 @@
 
 namespace ForgettingCurveBot.UI.Event
 {
-    public class OpenTelegramUserDetailViewEvent : PubSubEvent<long>
+    public class OpenTelegramUserDetailViewEvent : PubSubEvent<long?>
     {
     }
 }

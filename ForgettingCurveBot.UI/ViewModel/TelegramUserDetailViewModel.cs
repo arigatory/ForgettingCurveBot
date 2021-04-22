@@ -31,9 +31,11 @@ namespace ForgettingCurveBot.UI.ViewModel
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
         }
 
-        public async Task LoadAsync(long userId)
+        public async Task LoadAsync(long? userId)
         {
-            var user = await _telegramUserRepository.GetByIdAsync(userId);
+            var user = userId.HasValue
+                ? await _telegramUserRepository.GetByIdAsync(userId.Value)
+                : CreateNewTelegramUser();
             TelegramUser = new TelegramUserWrapper(user);
             TelegramUser.PropertyChanged += (s, e) =>
             {
@@ -45,6 +47,7 @@ namespace ForgettingCurveBot.UI.ViewModel
             };
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
         }
+
 
         public TelegramUserWrapper TelegramUser
         {
@@ -90,6 +93,14 @@ namespace ForgettingCurveBot.UI.ViewModel
                     Id = TelegramUser.Id,
                     DisplayMember = $"{TelegramUser.Nickname} {TelegramUser.TelegramIdentification}"
                 });
+        }
+
+
+        private TelegramUser CreateNewTelegramUser()
+        {
+            var user = new TelegramUser();
+            _telegramUserRepository.Add(user);
+            return user;
         }
     }
 }

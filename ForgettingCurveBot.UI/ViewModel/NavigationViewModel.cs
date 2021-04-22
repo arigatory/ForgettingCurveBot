@@ -25,8 +25,15 @@ namespace ForgettingCurveBot.UI.ViewModel
 
         private void AfterTelegramUserSaved(AfterTelegramUserSavedEventArgs obj)
         {
-            var lookupItem = Users.Single(l => l.Id == obj.Id);
-            lookupItem.DisplayMember = obj.DisplayMember;
+            var lookupItem = Users.SingleOrDefault(l => l.Id == obj.Id);
+            if (lookupItem ==  null)
+            {
+                Users.Add(new NavigationItemViewModel(obj.Id, obj.DisplayMember, _eventAggregator));
+            }
+            else
+            {
+                lookupItem.DisplayMember = obj.DisplayMember;
+            }
         }
 
         public ObservableCollection<NavigationItemViewModel> Users { get; } = new();
