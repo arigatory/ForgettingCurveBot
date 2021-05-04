@@ -27,12 +27,13 @@ namespace ForgettingCurveBot.UI.ViewModel
             _messageDialogService = messageDialogService;
             _eventAggregator.GetEvent<OpenTelegramUserDetailViewEvent>()
                 .Subscribe(OnOpenTelegramUserDetailView);
+            _eventAggregator.GetEvent<AfterTelegramUserDeletedEvent>()
+                .Subscribe(AfterTelegramUserDeleted);
 
             CreateNewTelegramUserCommand = new DelegateCommand(OnCreateNewTelegramUserExecute);
 
             NavigationViewModel = navigationViewModel;
         }
-
 
 
         public INavigationViewModel NavigationViewModel { get; }
@@ -75,6 +76,12 @@ namespace ForgettingCurveBot.UI.ViewModel
         private void OnCreateNewTelegramUserExecute()
         {
             OnOpenTelegramUserDetailView(null);
+        }
+
+
+        private void AfterTelegramUserDeleted(long id)
+        {
+            TelegramUserDetailViewModel = null;
         }
     }
 }

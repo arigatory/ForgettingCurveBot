@@ -58,9 +58,13 @@
         </DataGrid>
 
 
-        <StackPanel Grid.Row="10" Orientation="Horizontal">
+        <StackPanel Grid.Row="10"  Grid.ColumnSpan="2"  Orientation="Horizontal">
             <Button Content="Сохранить" Width="150" Margin="10"
                     Command="{Binding SaveCommand}"/>
+            <Button Content="Удалить" Width="150" Margin="10"
+                    Command="{Binding DeleteCommand}"/>
+            <Button Content="Забанить" Width="150" Margin="10"
+                    Command="{Binding BanCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

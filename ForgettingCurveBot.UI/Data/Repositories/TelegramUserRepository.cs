@@ -32,6 +32,11 @@ namespace ForgettingCurveBot.UI.Data.Repositories
             return _context.ChangeTracker.HasChanges();
         }
 
+        public void Remove(TelegramUser model)
+        {
+            _context.Users.Remove(model);
+        }
+
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();

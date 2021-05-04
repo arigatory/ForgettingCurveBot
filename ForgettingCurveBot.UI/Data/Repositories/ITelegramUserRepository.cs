@@ -10,5 +10,6 @@ namespace ForgettingCurveBot.UI.Data.Repositories
         Task SaveAsync();
         bool HasChanges();
         void Add(TelegramUser user);
+        void Remove(TelegramUser model);
     }
 }

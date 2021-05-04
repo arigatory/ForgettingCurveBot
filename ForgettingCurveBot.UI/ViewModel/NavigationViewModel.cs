@@ -21,21 +21,10 @@ namespace ForgettingCurveBot.UI.ViewModel
             _userLookupDataService = userLookupDataService;
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<AfterTelegramUserSavedEvent>().Subscribe(AfterTelegramUserSaved);
+            _eventAggregator.GetEvent<AfterTelegramUserDeletedEvent>().Subscribe(AfterTelegramUserDeleted);
         }
 
-        private void AfterTelegramUserSaved(AfterTelegramUserSavedEventArgs obj)
-        {
-            var lookupItem = Users.SingleOrDefault(l => l.Id == obj.Id);
-            if (lookupItem ==  null)
-            {
-                Users.Add(new NavigationItemViewModel(obj.Id, obj.DisplayMember, _eventAggregator));
-            }
-            else
-            {
-                lookupItem.DisplayMember = obj.DisplayMember;
-            }
-        }
-
+        
         public ObservableCollection<NavigationItemViewModel> Users { get; } = new();
 
         public async Task LoadAsync()
@@ -47,5 +36,28 @@ namespace ForgettingCurveBot.UI.ViewModel
                 Users.Add(new NavigationItemViewModel(item.Id, item.DisplayMember, _eventAggregator));
             }
         }
+
+        private void AfterTelegramUserDeleted(long userId)
+        {
+            var user = Users.SingleOrDefault(u => u.Id == userId);
+            if (user != null)
+            {
+                Users.Remove(user);
+            }
+        }
+
+        private void AfterTelegramUserSaved(AfterTelegramUserSavedEventArgs obj)
+        {
+            var lookupItem = Users.SingleOrDefault(l => l.Id == obj.Id);
+            if (lookupItem == null)
+            {
+                Users.Add(new NavigationItemViewModel(obj.Id, obj.DisplayMember, _eventAggregator));
+            }
+            else
+            {
+                lookupItem.DisplayMember = obj.DisplayMember;
+            }
+        }
+
     }
 }

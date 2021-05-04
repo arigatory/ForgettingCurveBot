@@ -1,14 +1,10 @@
 ﻿using ForgettingCurveBot.Model;
-using ForgettingCurveBot.UI.Data;
 using ForgettingCurveBot.UI.Data.Repositories;
 using ForgettingCurveBot.UI.Event;
+using ForgettingCurveBot.UI.View.Services;
 using ForgettingCurveBot.UI.Wrapper;
 using Prism.Commands;
 using Prism.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -18,17 +14,35 @@ namespace ForgettingCurveBot.UI.ViewModel
     {
         private readonly ITelegramUserRepository _telegramUserRepository;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IMessageDialogService _messageDialogService;
         private TelegramUserWrapper _user;
         private bool _hasChanges;
 
 
         public TelegramUserDetailViewModel(ITelegramUserRepository telegramUserRepository,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            IMessageDialogService messageDialogService)
         {
             _telegramUserRepository = telegramUserRepository;
             _eventAggregator = eventAggregator;
-
+            _messageDialogService = messageDialogService;
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
+            DeleteCommand = new DelegateCommand(OnDeleteExecute);
+
+        }
+
+        public ICommand SaveCommand { get; }
+        public ICommand DeleteCommand { get; }
+
+        private async void OnDeleteExecute()
+        {
+            var result = _messageDialogService.ShowOkCancelDialog("Вы действительно хотите удалить пользователя?","Вопрос");
+            if (result == MessageDialogResult.OK)
+            {
+                _telegramUserRepository.Remove(TelegramUser.Model);
+                await _telegramUserRepository.SaveAsync();
+                _eventAggregator.GetEvent<AfterTelegramUserDeletedEvent>().Publish(TelegramUser.Id);
+            }
         }
 
         public async Task LoadAsync(long? userId)
@@ -74,8 +88,6 @@ namespace ForgettingCurveBot.UI.ViewModel
             }
         }
 
-
-        public ICommand SaveCommand { get; }
 
         private bool OnSaveCanExecute()
         {
