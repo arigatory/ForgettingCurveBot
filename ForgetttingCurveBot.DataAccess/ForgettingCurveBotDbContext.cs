@@ -14,6 +14,7 @@ namespace ForgetttingCurveBot.DataAccess
         public DbSet<TelegramUser> Users { get; set; }
         public DbSet<CardToRemember> Cards { get; set; }
         public DbSet<Attempt> Attempts { get; set; }
+        public DbSet<NotificationInterval> NotificationIntervals { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

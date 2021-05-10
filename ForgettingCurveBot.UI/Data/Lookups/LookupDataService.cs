@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ForgettingCurveBot.UI.Data.Lookups
 {
-    public class LookupDataService : IUserLookupDataService
+    public class LookupDataService : IUserLookupDataService, INotificationIntervalsLookupDataService
     {
         private readonly Func<ForgettingCurveBotDbContext> _contexCreator;
 
@@ -28,6 +28,20 @@ namespace ForgettingCurveBot.UI.Data.Lookups
                     {
                         Id = u.Id,
                         DisplayMember = u.Nickname + " " + u.TelegramIdentification.ToString()
+                    }).ToListAsync();
+            }
+        }
+
+        public async Task<IEnumerable<LookupItem>> GetNotificationIntervalsLookupAsync()
+        {
+            using (var ctx = _contexCreator())
+            {
+                return await ctx.NotificationIntervals.AsNoTracking()
+                    .Select(u =>
+                    new LookupItem
+                    {
+                        Id = u.Id,
+                        DisplayMember = u.Name
                     }).ToListAsync();
             }
         }

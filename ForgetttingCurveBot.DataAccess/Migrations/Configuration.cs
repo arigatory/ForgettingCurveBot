@@ -30,7 +30,11 @@
                 }
                 Console.WriteLine($"{item.Id}\t{item.Nickname}\t{item}");
             }
-            context.Users.AddRange(users);
+            context.Users.AddOrUpdate(u => u.TelegramIdentification, users.ToArray());
+            context.NotificationIntervals.AddOrUpdate(nt => nt.IntervalMinutes,
+                new NotificationInterval { Name = "Каждую минуту", IntervalMinutes=1 },
+                new NotificationInterval { Name = "Каждые  15 минут", IntervalMinutes = 15 },
+                new NotificationInterval { Name = "Каждый час", IntervalMinutes = 60 });
         }
     }
 

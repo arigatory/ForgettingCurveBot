@@ -18,5 +18,9 @@ namespace ForgettingCurveBot.Model
         public Dictionary<DateTimeOffset, string> Messages { get; set; } = new();
         
         public List<CardToRemember> Cards { get; set; } = new();
+
+        public int? NotificationIntervalId { get; set; }
+
+        public NotificationInterval NotificationInterval { get; set; }
     }
 }
