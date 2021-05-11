@@ -9,11 +9,12 @@ namespace ForgettingCurveBot.Model
 {
     public class NotificationInterval
     {
-        public int Id { get; set; }
+        public short Id { get; set; }
         
         [Required]
         [StringLength(50)]
         public string Name { get; set; }
+
         public int IntervalMinutes { get; set; }
     }
 }

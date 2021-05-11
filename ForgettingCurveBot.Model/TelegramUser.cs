@@ -19,7 +19,7 @@ namespace ForgettingCurveBot.Model
         
         public List<CardToRemember> Cards { get; set; } = new();
 
-        public int? NotificationIntervalId { get; set; }
+        public short? NotificationIntervalId { get; set; }
 
         public NotificationInterval NotificationInterval { get; set; }
     }
