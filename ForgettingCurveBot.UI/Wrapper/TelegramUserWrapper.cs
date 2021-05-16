@@ -22,12 +22,12 @@ namespace ForgettingCurveBot.UI.Wrapper
             }
         }
 
-        public int? NotificationIntervalId
+        public long? NotificationIntervalId
         {
             get { return GetValue<int?>(); }
             set
             {
-                SetValue(value);
+                SetValue((int?)value);
             }
         }
     }
